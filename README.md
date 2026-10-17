@@ -7,7 +7,6 @@
 **Group Code:** G1-01  
 **Group Members:**  
 - **Muhammad Awais** (22I-0930) — *Group Head / Architecture & Multi-Agent Verification*  
-- **Muhammad Talha** (22I-0939) — *Data Engineering & Conformal Risk Calibration*  
 
 ---
 
