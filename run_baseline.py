@@ -1,0 +1,111 @@
+"""
+AI4015 Agentic Artificial Intelligence - Phase 1 Technical Baseline Runner.
+Project: G1 - LLM Agents that Translate Natural Language into Verified Optimization Models.
+Supervisor: Muhammad Sajjad | Group: G1-01
+
+Demonstrates an end-to-end execution of the 5-role Multi-Agent Verified Pipeline
+on an operational scenario (Airport De-Icing Fleet Dispatch), comparing:
+1. Non-Agentic Single-LLM Baseline
+2. Base-Paper Iterative Solver Debugger (LLMOPT)
+3. Proposed Multi-Agent Verified Pipeline with Conformal Risk Refusal
+"""
+
+import sys
+import json
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from src.schemas.contracts import OperationalProblemInstance
+from src.agents.base import ModelProvider
+from src.tools.solver_runner import SolverRunnerTool
+from src.tools.paraphraser import SemanticParaphraserTool
+from src.agents.conformal import ConformalRiskEngine
+from src.pipeline.baseline_single import SingleLLMBaseline
+from src.pipeline.baseline_llmopt import LLMOPTBaseline
+from src.pipeline.verified_multi import MultiAgentVerifiedPipeline
+from evaluation.evaluate import run_benchmark
+
+
+def main():
+    print("=" * 80)
+    print("  AI4015 AGENTIC AI - SEMESTER PROJECT PHASE 1 BASELINE")
+    print("  Project G1: LLM Agents that Translate Natural Language into Verified Optimization Models")
+    print("  Group Code: G1-01 | Supervisor: Muhammad Sajjad")
+    print("=" * 80)
+
+    # Load problem instance
+    data_path = Path("data/opsor_bench.json")
+    if not data_path.exists():
+        data_path = Path("VerifiedOptAgent/data/opsor_bench.json")
+
+    with open(data_path, "r", encoding="utf-8") as f:
+        bench_data = json.load(f)
+
+    # Use Problem 2: De-Icing Truck Fleet Dispatch
+    instance_dict = bench_data[1]
+    instance = OperationalProblemInstance.model_validate(instance_dict)
+
+    print(f"\n[Problem Under Test]: {instance.title}")
+    print(f"[Domain]: {instance.domain}")
+    print("-" * 80)
+    print(f"Problem Description:\n{instance.natural_language_text}\n")
+    print("-" * 80)
+
+    # Initialize components
+    provider = ModelProvider(provider_type="mock")
+    solver = SolverRunnerTool()
+    paraphraser = SemanticParaphraserTool()
+    conformal = ConformalRiskEngine(risk_level_alpha=0.05)
+    conformal.calibrate([0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14])
+
+    single_pipe = SingleLLMBaseline(provider, solver)
+    llmopt_pipe = LLMOPTBaseline(provider, solver, max_retries=3)
+    proposed_pipe = MultiAgentVerifiedPipeline(provider, solver, paraphraser, conformal)
+
+    # 1. Run Single LLM
+    print("\n>>> 1. RUNNING BASELINE 1: Non-Agentic Single-LLM Direct Formulation...")
+    res_single = single_pipe.run(instance)
+    print(f"    Status: {res_single['solver_result'].status_message}")
+    print(f"    Objective Value: ${res_single['solver_result'].objective_value:.2f}")
+    print(f"    Decision: {res_single['calibrated_decision'].action.value}")
+    print(f"    Tokens Used: {res_single['tokens_used']} | Latency: {res_single['latency_seconds']:.4f}s")
+
+    # 2. Run LLMOPT
+    print("\n>>> 2. RUNNING BASELINE 2: Base-Paper LLMOPT Iterative Solver Debugger (ICLR 2025)...")
+    res_llmopt = llmopt_pipe.run(instance)
+    print(f"    Status: {res_llmopt['solver_result'].status_message}")
+    print(f"    Objective Value: ${res_llmopt['solver_result'].objective_value:.2f}")
+    print(f"    Retries Performed: {res_llmopt['retries_performed']}")
+    print(f"    Decision: {res_llmopt['calibrated_decision'].action.value}")
+    print(f"    Tokens Used: {res_llmopt['tokens_used']} | Latency: {res_llmopt['latency_seconds']:.4f}s")
+
+    # 3. Run Proposed Multi-Agent Verified Pipeline
+    print("\n>>> 3. RUNNING PROPOSED: 5-Agent Verified Pipeline with Conformal Refusal...")
+    res_proposed = proposed_pipe.run(instance)
+    v_rep = res_proposed["verification_report"]
+    dec = res_proposed["calibrated_decision"]
+    print(f"    Solver Status: {res_proposed['solver_result'].status_message}")
+    print(f"    Optimal Objective Value: ${res_proposed['solver_result'].objective_value:.2f}")
+    print(f"    Optimal Decision Allocation: {res_proposed['solver_result'].variable_values}")
+    print(f"    Verification Overall Passed: {v_rep.overall_passed}")
+    print(f"    Constraint Coverage Rate (CCR): {v_rep.constraint_coverage_score * 100:.1f}%")
+    print(f"    Semantic Invariance Score (SIS): {v_rep.semantic_invariance_score * 100:.1f}%")
+    print(f"    Hallucinated Constraints: {v_rep.hallucinated_constraint_count}")
+    print(f"    Conformal Non-Conformity Score: {dec.non_conformity_score:.4f} (Threshold q = {dec.conformal_threshold_q:.4f})")
+    print(f"    Calibrated Action: {dec.action.value}")
+    print(f"    Tokens Used: {res_proposed['tokens_used']} | Latency: {res_proposed['latency_seconds']:.4f}s")
+
+    print("\n" + "=" * 80)
+    print("OPERATIONAL DISPATCH EXPLANATION GENERATED BY EXPLAINER AGENT:")
+    print("-" * 80)
+    print(res_proposed["operational_summary"])
+    print("=" * 80)
+
+    print("\nNow launching full benchmark evaluation across OpsOR-Bench and perturbation test suite...")
+    run_benchmark()
+
+
+if __name__ == "__main__":
+    main()

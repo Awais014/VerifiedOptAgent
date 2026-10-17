@@ -1,0 +1,7 @@
+scipy>=1.14.0
+numpy>=1.26.0
+pydantic>=2.7.0
+scikit-learn>=1.4.0
+sympy>=1.12
+google-genai>=2.0.0
+pytest>=8.0.0

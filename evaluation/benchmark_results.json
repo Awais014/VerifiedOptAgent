@@ -1,0 +1,55 @@
+{
+  "metrics_single_llm": {
+    "num_evaluated": 20,
+    "formulation_accuracy": 50.0,
+    "safety_calibration_rate": 75.0,
+    "avg_constraint_coverage_rate": 0.0,
+    "avg_hallucinated_constraint_rate": 0.0,
+    "avg_semantic_invariance_score": 0.0,
+    "empirical_accepted_error_rate": 33.33333333333333,
+    "decisions": {
+      "ACCEPT_AND_EXECUTE": 15,
+      "ESCALATE_TO_HUMAN": 0,
+      "ABSTAIN_UNCERTAIN": 5
+    },
+    "avg_tokens_per_instance": 245.9,
+    "avg_latency_seconds": 0.001845260000845883,
+    "compute_normalized_accuracy": 406.669377795852
+  },
+  "metrics_llmopt_base": {
+    "num_evaluated": 20,
+    "formulation_accuracy": 50.0,
+    "safety_calibration_rate": 75.0,
+    "avg_constraint_coverage_rate": 0.0,
+    "avg_hallucinated_constraint_rate": 0.0,
+    "avg_semantic_invariance_score": 0.0,
+    "empirical_accepted_error_rate": 33.33333333333333,
+    "decisions": {
+      "ACCEPT_AND_EXECUTE": 15,
+      "ESCALATE_TO_HUMAN": 0,
+      "ABSTAIN_UNCERTAIN": 5
+    },
+    "avg_tokens_per_instance": 262.4,
+    "avg_latency_seconds": 0.0022236850003537257,
+    "compute_normalized_accuracy": 381.09756097560984
+  },
+  "metrics_proposed_multiagent": {
+    "num_evaluated": 20,
+    "formulation_accuracy": 30.0,
+    "safety_calibration_rate": 100.0,
+    "avg_constraint_coverage_rate": 75.00000000000001,
+    "avg_hallucinated_constraint_rate": 0.0,
+    "avg_semantic_invariance_score": 68.40979727109922,
+    "empirical_accepted_error_rate": 0.0,
+    "decisions": {
+      "ACCEPT_AND_EXECUTE": 6,
+      "ESCALATE_TO_HUMAN": 2,
+      "ABSTAIN_UNCERTAIN": 12
+    },
+    "avg_tokens_per_instance": 678.4,
+    "avg_latency_seconds": 0.0012232950008183251,
+    "compute_normalized_accuracy": 88.44339622641509
+  },
+  "conformal_threshold_q": 0.15,
+  "alpha_risk_budget": 0.05
+}
